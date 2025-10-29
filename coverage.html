@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>hof: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/suryanshu-09/hof/hof.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">// Package hof: Higher Order Functions in Golang Using Iterators and Generics
+package hof
+
+import (
+        "iter"
+        "slices"
+)
+
+// Core Array Methods
+
+// Map : Transform each element
+func Map[E, T any](arr []E, transform func(E) T) iter.Seq[T] <span class="cov8" title="1">{
+        return func(yield func(T) bool) </span><span class="cov8" title="1">{
+                for _, v := range arr </span><span class="cov8" title="1">{
+                        if !yield(transform(v)) </span><span class="cov8" title="1">{
+                                return
+                        }</span>
+                }
+        }
+}
+
+// Filter : Keep elements that satisfy a condition
+func Filter[E any](arr []E, filter func(E) bool) iter.Seq[E] <span class="cov8" title="1">{
+        return func(yield func(E) bool) </span><span class="cov8" title="1">{
+                for _, v := range arr </span><span class="cov8" title="1">{
+                        if filter(v) </span><span class="cov8" title="1">{
+                                if !yield(v) </span><span class="cov8" title="1">{
+                                        return
+                                }</span>
+                        }
+                }
+        }
+}
+
+// Reduce : Accumulate values into one
+func Reduce[E any, T any](arr []E, fn func(T, E) T, init T) T <span class="cov8" title="1">{
+        acc := init
+        for _, v := range arr </span><span class="cov8" title="1">{
+                acc = fn(acc, v)
+        }</span>
+        <span class="cov8" title="1">return acc</span>
+}
+
+// ForEach : Apply side-effects (printing, logging, etc.)
+func ForEach[E any](arr []E, fn func(E)) <span class="cov8" title="1">{
+        for _, v := range arr </span><span class="cov8" title="1">{
+                fn(v)
+        }</span>
+}
+
+// Find : Return first element satisfying condition
+func Find[E any](arr []E, fn func(E) bool) (E, bool) <span class="cov8" title="1">{
+        var out E
+        for _, v := range arr </span><span class="cov8" title="1">{
+                if fn(v) </span><span class="cov8" title="1">{
+                        return v, true
+                }</span>
+        }
+        <span class="cov8" title="1">return out, false</span>
+}
+
+// Some : Return true if any element matches
+func Some[E any](arr []E, fn func(E) bool) bool <span class="cov8" title="1">{
+        return slices.ContainsFunc(arr, fn)
+}</span>
+
+// Every : Return true if all elements match
+func Every[E any](arr []E, fn func(E) bool) bool <span class="cov8" title="1">{
+        for _, v := range arr </span><span class="cov8" title="1">{
+                if !fn(v) </span><span class="cov8" title="1">{
+                        return false
+                }</span>
+        }
+        <span class="cov8" title="1">return true</span>
+}
+
+// Numeric Helpers
+
+type Number interface {
+        ~int | ~int8 | ~int16 | ~int32 | ~int64 |
+                ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+                ~float32 | ~float64
+}
+
+// Square : Find the square of each element
+func Square[E Number](arr []E) iter.Seq[E] <span class="cov8" title="1">{
+        return func(yield func(E) bool) </span><span class="cov8" title="1">{
+                for _, v := range arr </span><span class="cov8" title="1">{
+                        if !yield(v * v) </span><span class="cov8" title="1">{
+                                return
+                        }</span>
+                }
+        }
+}
+
+// Cube : Find the cube of each element
+func Cube[E Number](arr []E) iter.Seq[E] <span class="cov8" title="1">{
+        return func(yield func(E) bool) </span><span class="cov8" title="1">{
+                for _, v := range arr </span><span class="cov8" title="1">{
+                        if !yield(v * v * v) </span><span class="cov8" title="1">{
+                                return
+                        }</span>
+                }
+        }
+}
+
+// Sum : Add all numbers
+func Sum[E Number](arr []E) E <span class="cov8" title="1">{
+        var sum E
+        for _, v := range arr </span><span class="cov8" title="1">{
+                sum += v
+        }</span>
+        <span class="cov8" title="1">return sum</span>
+}
+
+// Average : Compute mean
+func Average[E Number](arr []E) float64 <span class="cov8" title="1">{
+        var sum E
+        for _, v := range arr </span><span class="cov8" title="1">{
+                sum += v
+        }</span>
+        <span class="cov8" title="1">return float64(sum) / float64(len(arr))</span>
+}
+
+// Min : Find maximum value
+func Min[E Number](arr []E) E <span class="cov8" title="1">{
+        switch len(arr) </span>{
+        case 0:<span class="cov8" title="1">
+                var min_ E
+                return min_</span>
+        case 1:<span class="cov8" title="1">
+                return arr[0]</span>
+        default:<span class="cov8" title="1">
+                min_ := arr[0]
+                for _, v := range arr </span><span class="cov8" title="1">{
+                        if min_ &gt; v </span><span class="cov8" title="1">{
+                                min_ = v
+                        }</span>
+                }
+                <span class="cov8" title="1">return min_</span>
+        }
+}
+
+// Max : Find minimum value
+func Max[E Number](arr []E) E <span class="cov8" title="1">{
+        switch len(arr) </span>{
+        case 0:<span class="cov8" title="1">
+                var max_ E
+                return max_</span>
+        case 1:<span class="cov8" title="1">
+                return arr[0]</span>
+        default:<span class="cov8" title="1">
+                max_ := arr[0]
+                for _, v := range arr </span><span class="cov8" title="1">{
+                        if max_ &lt; v </span><span class="cov8" title="1">{
+                                max_ = v
+                        }</span>
+                }
+                <span class="cov8" title="1">return max_</span>
+        }
+}
+
+// Collection Utilities
+
+// GroupBy : Cluster elements by key
+func GroupBy[T any, K comparable](arr []T, keyFn func(T) K) map[K][]T <span class="cov8" title="1">{
+        groups := make(map[K][]T)
+        for _, v := range arr </span><span class="cov8" title="1">{
+                key := keyFn(v)
+                groups[key] = append(groups[key], v)
+        }</span>
+        <span class="cov8" title="1">return groups</span>
+}
+
+// Partition : Split into matching/non-matching
+func Partition[T any](arr []T, fn func(T) bool) ([]T, []T) <span class="cov8" title="1">{
+        var matched, rest []T
+        for _, v := range arr </span><span class="cov8" title="1">{
+                if fn(v) </span><span class="cov8" title="1">{
+                        matched = append(matched, v)
+                }</span> else<span class="cov8" title="1"> {
+                        rest = append(rest, v)
+                }</span>
+        }
+        <span class="cov8" title="1">return matched, rest</span>
+}
+
+// Unique : Remove duplicates
+func Unique[T comparable](arr []T) []T <span class="cov8" title="1">{
+        seen := make(map[T]struct{})
+        var result []T
+        for _, v := range arr </span><span class="cov8" title="1">{
+                if _, ok := seen[v]; !ok </span><span class="cov8" title="1">{
+                        seen[v] = struct{}{}
+                        result = append(result, v)
+                }</span>
+        }
+        <span class="cov8" title="1">return result</span>
+}
+
+// Zip : Combine two slices
+func Zip[A, B any](a []A, b []B) [][2]any <span class="cov8" title="1">{
+        n := len(a)
+        n = min(n, len(b))
+        result := make([][2]any, n)
+        for i := 0; i &lt; n; i++ </span><span class="cov8" title="1">{
+                result[i] = [2]any{a[i], b[i]}
+        }</span>
+        <span class="cov8" title="1">return result</span>
+}
+
+// Unzip : Split pairs
+func Unzip[A, B any](pairs [][2]any) ([]A, []B) <span class="cov8" title="1">{
+        var aVals []A
+        var bVals []B
+        for _, pair := range pairs </span><span class="cov8" title="1">{
+                aVals = append(aVals, pair[0].(A))
+                bVals = append(bVals, pair[1].(B))
+        }</span>
+        <span class="cov8" title="1">return aVals, bVals</span>
+}
+
+// FlatMap : Map + flatten in one step
+func FlatMap[T any, U any](arr []T, fn func(T) []U) []U <span class="cov8" title="1">{
+        var result []U
+        for _, v := range arr </span><span class="cov8" title="1">{
+                result = append(result, fn(v)...)
+        }</span>
+        <span class="cov8" title="1">return result</span>
+}
+
+// Chunk : Split slice into groups
+func Chunk[T any](arr []T, size int) [][]T <span class="cov8" title="1">{
+        if size &lt;= 0 </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+        <span class="cov8" title="1">var chunks [][]T
+        for i := 0; i &lt; len(arr); i += size </span><span class="cov8" title="1">{
+                end := i + size
+                end = min(end, len(arr))
+                chunks = append(chunks, arr[i:end])
+        }</span>
+        <span class="cov8" title="1">return chunks</span>
+}
+
+// Functional Composition
+
+// Compose : Compose functions (right-to-left)
+func Compose[A, B, C any](f func(B) C, g func(A) B) func(A) C <span class="cov8" title="1">{
+        return func(x A) C </span><span class="cov8" title="1">{
+                return f(g(x))
+        }</span>
+}
+
+// Pipe : Compose functions (left-to-right)
+func Pipe[A, B, C any](f func(A) B, g func(B) C) func(A) C <span class="cov8" title="1">{
+        return func(x A) C </span><span class="cov8" title="1">{
+                return g(f(x))
+        }</span>
+}
+
+// Curry : Turn multi-arg func into chain of funcs
+func Curry[A, B, C any](fn func(A, B) C) func(A) func(B) C <span class="cov8" title="1">{
+        return func(a A) func(B) C </span><span class="cov8" title="1">{
+                return func(b B) C </span><span class="cov8" title="1">{
+                        return fn(a, b)
+                }</span>
+        }
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

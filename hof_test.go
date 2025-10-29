@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/suryanshu-09/hof"
@@ -597,4 +598,478 @@ func TestMax(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("empty slice", func(t *testing.T) {
+		nums := []int{}
+		got := hof.Max(nums)
+		want := 0 // zero value for int
+		if got != want {
+			t.Errorf("Max(%v) = %v, want %v", nums, got, want)
+		}
+	})
+}
+
+func TestGroupBy(t *testing.T) {
+	t.Run("group by length", func(t *testing.T) {
+		words := []string{"cat", "dog", "bird", "fish", "elephant"}
+		got := hof.GroupBy(words, func(s string) int { return len(s) })
+		want := map[int][]string{
+			3: {"cat", "dog"},
+			4: {"bird", "fish"},
+			8: {"elephant"},
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("GroupBy() = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("group by first letter", func(t *testing.T) {
+		words := []string{"apple", "banana", "apricot", "blueberry"}
+		got := hof.GroupBy(words, func(s string) byte { return s[0] })
+		want := map[byte][]string{
+			'a': {"apple", "apricot"},
+			'b': {"banana", "blueberry"},
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("GroupBy() = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("group by even/odd", func(t *testing.T) {
+		numbers := []int{1, 2, 3, 4, 5, 6}
+		got := hof.GroupBy(numbers, func(n int) string {
+			if n%2 == 0 {
+				return "even"
+			}
+			return "odd"
+		})
+		want := map[string][]int{
+			"even": {2, 4, 6},
+			"odd":  {1, 3, 5},
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("GroupBy() = %v, want %v", got, want)
+		}
+	})
+}
+
+func TestPartition(t *testing.T) {
+	t.Run("partition even/odd", func(t *testing.T) {
+		numbers := []int{1, 2, 3, 4, 5, 6, 7, 8}
+		matched, rest := hof.Partition(numbers, func(n int) bool { return n%2 == 0 })
+
+		wantMatched := []int{2, 4, 6, 8}
+		wantRest := []int{1, 3, 5, 7}
+
+		if !reflect.DeepEqual(matched, wantMatched) {
+			t.Errorf("Partition() matched = %v, want %v", matched, wantMatched)
+		}
+		if !reflect.DeepEqual(rest, wantRest) {
+			t.Errorf("Partition() rest = %v, want %v", rest, wantRest)
+		}
+	})
+
+	t.Run("partition strings by length", func(t *testing.T) {
+		words := []string{"cat", "elephant", "dog", "butterfly"}
+		matched, rest := hof.Partition(words, func(s string) bool { return len(s) > 3 })
+
+		wantMatched := []string{"elephant", "butterfly"}
+		wantRest := []string{"cat", "dog"}
+
+		if !reflect.DeepEqual(matched, wantMatched) {
+			t.Errorf("Partition() matched = %v, want %v", matched, wantMatched)
+		}
+		if !reflect.DeepEqual(rest, wantRest) {
+			t.Errorf("Partition() rest = %v, want %v", rest, wantRest)
+		}
+	})
+
+	t.Run("partition empty slice", func(t *testing.T) {
+		numbers := []int{}
+		matched, rest := hof.Partition(numbers, func(n int) bool { return n > 0 })
+
+		if len(matched) != 0 || len(rest) != 0 {
+			t.Errorf("Partition() on empty slice should return empty slices, got matched=%v, rest=%v", matched, rest)
+		}
+	})
+}
+
+func TestUnique(t *testing.T) {
+	t.Run("integers with duplicates", func(t *testing.T) {
+		input := []int{1, 2, 2, 3, 1, 4, 3, 5}
+		got := hof.Unique(input)
+		want := []int{1, 2, 3, 4, 5}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Unique(%v) = %v, want %v", input, got, want)
+		}
+	})
+
+	t.Run("strings with duplicates", func(t *testing.T) {
+		input := []string{"apple", "banana", "apple", "cherry", "banana"}
+		got := hof.Unique(input)
+		want := []string{"apple", "banana", "cherry"}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Unique(%v) = %v, want %v", input, got, want)
+		}
+	})
+
+	t.Run("no duplicates", func(t *testing.T) {
+		input := []int{1, 2, 3, 4, 5}
+		got := hof.Unique(input)
+		want := []int{1, 2, 3, 4, 5}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Unique(%v) = %v, want %v", input, got, want)
+		}
+	})
+
+	t.Run("empty slice", func(t *testing.T) {
+		input := []int{}
+		got := hof.Unique(input)
+		want := []int{}
+
+		if len(got) != 0 {
+			t.Errorf("Unique(%v) = %v, want %v", input, got, want)
+		}
+	})
+}
+
+func TestZip(t *testing.T) {
+	t.Run("same length slices", func(t *testing.T) {
+		a := []int{1, 2, 3}
+		b := []string{"a", "b", "c"}
+		got := hof.Zip(a, b)
+		want := [][2]any{{1, "a"}, {2, "b"}, {3, "c"}}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Zip(%v, %v) = %v, want %v", a, b, got, want)
+		}
+	})
+
+	t.Run("different length slices", func(t *testing.T) {
+		a := []int{1, 2, 3, 4, 5}
+		b := []string{"a", "b", "c"}
+		got := hof.Zip(a, b)
+		want := [][2]any{{1, "a"}, {2, "b"}, {3, "c"}}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Zip(%v, %v) = %v, want %v", a, b, got, want)
+		}
+	})
+
+	t.Run("empty slices", func(t *testing.T) {
+		a := []int{}
+		b := []string{}
+		got := hof.Zip(a, b)
+		want := [][2]any{}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Zip(%v, %v) = %v, want %v", a, b, got, want)
+		}
+	})
+}
+
+func TestUnzip(t *testing.T) {
+	t.Run("unzip pairs", func(t *testing.T) {
+		pairs := [][2]any{{1, "a"}, {2, "b"}, {3, "c"}}
+		gotA, gotB := hof.Unzip[int, string](pairs)
+		wantA := []int{1, 2, 3}
+		wantB := []string{"a", "b", "c"}
+
+		if !reflect.DeepEqual(gotA, wantA) {
+			t.Errorf("Unzip() first slice = %v, want %v", gotA, wantA)
+		}
+		if !reflect.DeepEqual(gotB, wantB) {
+			t.Errorf("Unzip() second slice = %v, want %v", gotB, wantB)
+		}
+	})
+
+	t.Run("empty pairs", func(t *testing.T) {
+		pairs := [][2]any{}
+		gotA, gotB := hof.Unzip[int, string](pairs)
+
+		if len(gotA) != 0 || len(gotB) != 0 {
+			t.Errorf("Unzip() on empty pairs should return empty slices, got A=%v, B=%v", gotA, gotB)
+		}
+	})
+}
+
+func TestFlatMap(t *testing.T) {
+	t.Run("split strings into characters", func(t *testing.T) {
+		words := []string{"cat", "dog"}
+		got := hof.FlatMap(words, func(s string) []string {
+			chars := make([]string, len(s))
+			for i, r := range s {
+				chars[i] = string(r)
+			}
+			return chars
+		})
+		want := []string{"c", "a", "t", "d", "o", "g"}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("FlatMap() = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("duplicate numbers", func(t *testing.T) {
+		numbers := []int{1, 2, 3}
+		got := hof.FlatMap(numbers, func(n int) []int {
+			return []int{n, n}
+		})
+		want := []int{1, 1, 2, 2, 3, 3}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("FlatMap() = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("empty result", func(t *testing.T) {
+		numbers := []int{1, 2, 3}
+		got := hof.FlatMap(numbers, func(n int) []int {
+			return []int{}
+		})
+
+		if len(got) != 0 {
+			t.Errorf("FlatMap() = %v, want empty slice", got)
+		}
+	})
+}
+
+func TestChunk(t *testing.T) {
+	t.Run("chunk into size 2", func(t *testing.T) {
+		input := []int{1, 2, 3, 4, 5, 6, 7}
+		got := hof.Chunk(input, 2)
+		want := [][]int{{1, 2}, {3, 4}, {5, 6}, {7}}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Chunk(%v, 2) = %v, want %v", input, got, want)
+		}
+	})
+
+	t.Run("chunk into size 3", func(t *testing.T) {
+		input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+		got := hof.Chunk(input, 3)
+		want := [][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Chunk(%v, 3) = %v, want %v", input, got, want)
+		}
+	})
+
+	t.Run("chunk size larger than slice", func(t *testing.T) {
+		input := []int{1, 2, 3}
+		got := hof.Chunk(input, 5)
+		want := [][]int{{1, 2, 3}}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Chunk(%v, 5) = %v, want %v", input, got, want)
+		}
+	})
+
+	t.Run("chunk with zero size", func(t *testing.T) {
+		input := []int{1, 2, 3}
+		got := hof.Chunk(input, 0)
+
+		if got != nil {
+			t.Errorf("Chunk(%v, 0) = %v, want nil", input, got)
+		}
+	})
+
+	t.Run("chunk with negative size", func(t *testing.T) {
+		input := []int{1, 2, 3}
+		got := hof.Chunk(input, -1)
+
+		if got != nil {
+			t.Errorf("Chunk(%v, -1) = %v, want nil", input, got)
+		}
+	})
+
+	t.Run("chunk empty slice", func(t *testing.T) {
+		input := []int{}
+		got := hof.Chunk(input, 2)
+
+		if len(got) != 0 {
+			t.Errorf("Chunk(%v, 2) = %v, want empty slice", input, got)
+		}
+	})
+}
+
+func TestCompose(t *testing.T) {
+	t.Run("compose int functions", func(t *testing.T) {
+		addOne := func(x int) int { return x + 1 }
+		multiplyTwo := func(x int) int { return x * 2 }
+
+		composed := hof.Compose(multiplyTwo, addOne)
+		got := composed(5)
+		want := 12 // (5 + 1) * 2
+
+		if got != want {
+			t.Errorf("Compose(multiplyTwo, addOne)(5) = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("compose string functions", func(t *testing.T) {
+		addExclamation := func(s string) string { return s + "!" }
+		toUpper := func(s string) string { return "UPPER:" + s }
+
+		composed := hof.Compose(toUpper, addExclamation)
+		got := composed("hello")
+		want := "UPPER:hello!"
+
+		if got != want {
+			t.Errorf("Compose(toUpper, addExclamation)(\"hello\") = %v, want %v", got, want)
+		}
+	})
+}
+
+func TestPipe(t *testing.T) {
+	t.Run("pipe int functions", func(t *testing.T) {
+		addOne := func(x int) int { return x + 1 }
+		multiplyTwo := func(x int) int { return x * 2 }
+
+		piped := hof.Pipe(addOne, multiplyTwo)
+		got := piped(5)
+		want := 12 // (5 + 1) * 2
+
+		if got != want {
+			t.Errorf("Pipe(addOne, multiplyTwo)(5) = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("pipe string functions", func(t *testing.T) {
+		addExclamation := func(s string) string { return s + "!" }
+		toUpper := func(s string) string { return "UPPER:" + s }
+
+		piped := hof.Pipe(addExclamation, toUpper)
+		got := piped("hello")
+		want := "UPPER:hello!"
+
+		if got != want {
+			t.Errorf("Pipe(addExclamation, toUpper)(\"hello\") = %v, want %v", got, want)
+		}
+	})
+}
+
+func TestCurry(t *testing.T) {
+	t.Run("curry add function", func(t *testing.T) {
+		add := func(a, b int) int { return a + b }
+		curriedAdd := hof.Curry(add)
+
+		addFive := curriedAdd(5)
+		got := addFive(3)
+		want := 8
+
+		if got != want {
+			t.Errorf("Curry(add)(5)(3) = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("curry string concat", func(t *testing.T) {
+		concat := func(a, b string) string { return a + b }
+		curriedConcat := hof.Curry(concat)
+
+		addHello := curriedConcat("Hello, ")
+		got := addHello("World!")
+		want := "Hello, World!"
+
+		if got != want {
+			t.Errorf("Curry(concat)(\"Hello, \")(\"World!\") = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("curry multiply", func(t *testing.T) {
+		multiply := func(a, b float64) float64 { return a * b }
+		curriedMultiply := hof.Curry(multiply)
+
+		double := curriedMultiply(2.0)
+		got := double(3.5)
+		want := 7.0
+
+		if !floatAlmostEqual(got, want, 1e-9) {
+			t.Errorf("Curry(multiply)(2.0)(3.5) = %v, want %v", got, want)
+		}
+	})
+}
+
+// Early Termination Tests for Iterator Functions
+
+func TestMapEarlyTermination(t *testing.T) {
+	input := []int{1, 2, 3, 4, 5}
+	var result []string
+
+	// Break after processing 2 elements to trigger early return in Map
+	for val := range hof.Map(input, func(i int) string {
+		return fmt.Sprintf("item_%d", i)
+	}) {
+		result = append(result, val)
+		if len(result) >= 2 {
+			break // This will cause yield to return false
+		}
+	}
+
+	expected := []string{"item_1", "item_2"}
+	if !slices.Equal(result, expected) {
+		t.Errorf("Expected %v, got %v", expected, result)
+	}
+}
+
+func TestFilterEarlyTermination(t *testing.T) {
+	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	var result []int
+
+	// Break after finding 2 even numbers to trigger early return in Filter
+	for val := range hof.Filter(input, func(i int) bool {
+		return i%2 == 0
+	}) {
+		result = append(result, val)
+		if len(result) >= 2 {
+			break // This will cause yield to return false
+		}
+	}
+
+	expected := []int{2, 4}
+	if !slices.Equal(result, expected) {
+		t.Errorf("Expected %v, got %v", expected, result)
+	}
+}
+
+func TestSquareEarlyTermination(t *testing.T) {
+	input := []int{1, 2, 3, 4, 5}
+	var result []int
+
+	// Break after processing 3 elements to trigger early return in Square
+	for val := range hof.Square(input) {
+		result = append(result, val)
+		if len(result) >= 3 {
+			break // This will cause yield to return false
+		}
+	}
+
+	expected := []int{1, 4, 9}
+	if !slices.Equal(result, expected) {
+		t.Errorf("Expected %v, got %v", expected, result)
+	}
+}
+
+func TestCubeEarlyTermination(t *testing.T) {
+	input := []int{1, 2, 3, 4, 5}
+	var result []int
+
+	// Break after processing 3 elements to trigger early return in Cube
+	for val := range hof.Cube(input) {
+		result = append(result, val)
+		if len(result) >= 3 {
+			break // This will cause yield to return false
+		}
+	}
+
+	expected := []int{1, 8, 27}
+	if !slices.Equal(result, expected) {
+		t.Errorf("Expected %v, got %v", expected, result)
+	}
 }
