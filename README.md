@@ -2,7 +2,7 @@
 
 A checklist of JavaScript-style higher-order functions implemented in Go.
 
-(Added `Square[T Number]([]T) iter.Seq[T]` and `Cube[T Number]([]T) iter.Seq[T]`)
+(Added `Square[E Number]([]E) iter.Seq[E]` and `Cube[E Number]([]E) iter.Seq[E]`)
 
 ---
 
@@ -11,19 +11,21 @@ A checklist of JavaScript-style higher-order functions implemented in Go.
 - [x] **`Map[E, T]([]E, func(E) T) iter.Seq[T]`** — Transform each element
 - [x] **`Filter[E]([]E, func(E) bool) iter.Seq[E]`** — Keep elements that satisfy a condition
 - [x] **`Reduce[T, U]([]T, func(U, T) U, init U) U`** — Accumulate values into one
-- [ ] **`ForEach[T]([]T, func(T))`** — Apply side-effects (printing, logging, etc.)
-- [ ] **`Find[T]([]T, func(T) bool) (T, bool)`** — Return first element satisfying condition
-- [ ] **`Some[T]([]T, func(T) bool) bool`** — Return `true` if any element matches
-- [ ] **`Every[T]([]T, func(T) bool) bool`** — Return `true` if all elements match
+- [x] **`ForEach[E]([]E, func(E))`** — Apply side-effects (printing, logging, etc.)
+- [x] **`Find[E]([]E, func(E) bool) (E, bool)`** — Return first element satisfying condition
+- [x] **`Some[E]([]E, func(E) bool) bool`** — Return `true` if any element matches
+- [x] **`Every[E]([]E, func(E) bool) bool`** — Return `true` if all elements match
 
 ---
 
 ## Numeric Helpers
 
-- [ ] **`Sum[T Number](xs []T) T`** — Add all numbers
-- [ ] **`Average[T Number](xs []T) float64`** — Compute mean
-- [ ] **`Max[T Number](xs []T) T`** — Find maximum value
-- [ ] **`Min[T Number](xs []T) T`** — Find minimum value
+- [x] `Square[E Number]([]E) iter.Seq[E]` — Find the square of each element
+- [x] `Cube[E Number]([]E) iter.Seq[E]` — Find the cube of each element
+- [x] **`Sum[E Number]([]E) E`** — Add all numbers
+- [x] **`Average[E Number]([]E) float64`** — Compute mean
+- [x] **`Max[E Number]([]E) E`** — Find maximum value
+- [x] **`Min[E Number]([]T) E`** — Find minimum value
 
 ---
 

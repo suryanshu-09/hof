@@ -1,6 +1,7 @@
 package hof_test
 
 import (
+	"bytes"
 	"fmt"
 	"math"
 	"reflect"
@@ -8,68 +9,6 @@ import (
 
 	"github.com/suryanshu-09/hof"
 )
-
-func TestSquare(t *testing.T) {
-	t.Run("integers", func(t *testing.T) {
-		inputArr := [][]int{
-			{1, 2, 3, 4, 5},
-			{-4, 0, 69, 12},
-			{0},
-		}
-
-		outputArr := [][]int{
-			{1, 4, 9, 16, 25},
-			{16, 0, 4761, 144},
-			{0},
-		}
-
-		for idx, val := range inputArr {
-			var req []int
-			for sq := range hof.Square(val) {
-				req = append(req, sq)
-			}
-			if !reflect.DeepEqual(req, outputArr[idx]) {
-				t.Errorf("got:%v\nwant:%v", req, outputArr[idx])
-			}
-		}
-	})
-	t.Run("floats", func(t *testing.T) {
-		inputArr := [][]float64{
-			{1.9, 2.2, 3.2, 4.0, 5.1},
-			{-4.9, 0.1, 69.42, 12.7},
-			{0.0},
-		}
-
-		outputArr := [][]float64{
-			{3.61, 4.84, 10.24, 16, 26.01},
-			{24.01, 0.01, 4819.1364, 161.29},
-			{0},
-		}
-
-		for idx, val := range inputArr {
-			var req []float64
-			for sq := range hof.Square(val) {
-				req = append(req, sq)
-			}
-
-			if !slicesAlmostEqual(req, outputArr[idx], 1e-9) {
-				t.Errorf("case %d:\ngot:  %v\nwant: %v", idx, req, outputArr[idx])
-			}
-		}
-	})
-}
-
-func slicesAlmostEqual(a, b []float64, eps float64) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if math.Abs(a[i]-b[i]) > eps {
-			return false
-		}
-	}
-	return true
-}
 
 func TestMap(t *testing.T) {
 	t.Run("int to main", func(t *testing.T) {
@@ -271,4 +210,391 @@ func TestReduce(t *testing.T) {
 
 func floatAlmostEqual(a, b, epsilon float64) bool {
 	return math.Abs(a-b) < epsilon
+}
+
+func TestForEach(t *testing.T) {
+	t.Run("test array transformation", func(t *testing.T) {
+		var buf bytes.Buffer
+
+		inpArr := []int{1, 2, 3, 4, 5}
+		hof.ForEach(inpArr, func(x int) {
+			buf.WriteString(fmt.Sprintf("%d\n", x))
+		})
+
+		got := buf.String()
+		want := "1\n2\n3\n4\n5\n"
+
+		if got != want {
+			t.Errorf("ForEach() = %q, want %q", got, want)
+		}
+	})
+}
+
+func TestFind(t *testing.T) {
+	t.Run("find cherry", func(t *testing.T) {
+		inputArr := []string{"banana", "apple", "cherry", "orange"}
+		cherry, found := hof.Find(inputArr, func(fruit string) bool {
+			return fruit == "cherry"
+		})
+
+		if !found {
+			t.Error("not found")
+		}
+
+		if cherry != "cherry" {
+			t.Errorf("got:%s\nwant:%s", cherry, "cherry")
+		}
+	})
+	t.Run("find cherry not", func(t *testing.T) {
+		inputArr := []string{"banana", "apple", "orange"}
+		cherry, found := hof.Find(inputArr, func(fruit string) bool {
+			return fruit == "cherry"
+		})
+
+		if found {
+			t.Error("incorrect found")
+		}
+
+		if cherry != "" {
+			t.Errorf("got:%s\nwant:%s", cherry, "")
+		}
+	})
+}
+
+func TestSome(t *testing.T) {
+	t.Run("greater than 5", func(t *testing.T) {
+		inputArr := []int{1, 2, 3, 6, 6, 7, 8}
+		want := true
+		if out := !hof.Some(inputArr, func(x int) bool {
+			return x > 5
+		}); out {
+			t.Errorf("got:%v\nwant:%v", out, want)
+		}
+	})
+
+	t.Run("greater than 5 not", func(t *testing.T) {
+		inputArr := []int{1, 2, 3, 4}
+		want := false
+		if out := hof.Some(inputArr, func(x int) bool {
+			return x > 5
+		}); out {
+			t.Errorf("got:%v\nwant:%v", out, want)
+		}
+	})
+}
+
+func TestEvery(t *testing.T) {
+	t.Run("greater than 5", func(t *testing.T) {
+		inputArr := []int{6, 6, 7, 8}
+		want := true
+		if out := !hof.Every(inputArr, func(x int) bool {
+			return x > 5
+		}); out {
+			t.Errorf("got:%v\nwant:%v", out, want)
+		}
+	})
+
+	t.Run("greater than 5 not", func(t *testing.T) {
+		inputArr := []int{5, 7, 8, 1, 3}
+		want := false
+		if out := hof.Every(inputArr, func(x int) bool {
+			return x > 5
+		}); out {
+			t.Errorf("got:%v\nwant:%v", out, want)
+		}
+	})
+}
+
+func TestSquare(t *testing.T) {
+	t.Run("integers", func(t *testing.T) {
+		inputArr := [][]int{
+			{1, 2, 3, 4, 5},
+			{-4, 0, 69, 12},
+			{0},
+			{},
+		}
+
+		outputArr := [][]int{
+			{1, 4, 9, 16, 25},
+			{16, 0, 4761, 144},
+			{0},
+			{},
+		}
+
+		for idx, val := range inputArr {
+			req := []int{}
+			for sq := range hof.Square(val) {
+				req = append(req, sq)
+			}
+
+			if !reflect.DeepEqual(req, outputArr[idx]) {
+				t.Errorf("got:%v\nwant:%v", req, outputArr[idx])
+			}
+		}
+	})
+	t.Run("floats", func(t *testing.T) {
+		inputArr := [][]float64{
+			{1.9, 2.2, 3.2, 4.0, 5.1},
+			{-4.9, 0.1, 69.42, 12.7},
+			{0.0},
+			{},
+		}
+
+		outputArr := [][]float64{
+			{3.61, 4.84, 10.24, 16, 26.01},
+			{24.01, 0.01, 4819.1364, 161.29},
+			{0},
+			{},
+		}
+
+		for idx, val := range inputArr {
+			var req []float64
+			for sq := range hof.Square(val) {
+				req = append(req, sq)
+			}
+
+			if !slicesAlmostEqual(req, outputArr[idx], 1e-9) {
+				t.Errorf("case %d:\ngot:  %v\nwant: %v", idx, req, outputArr[idx])
+			}
+		}
+	})
+}
+
+func slicesAlmostEqual(a, b []float64, eps float64) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if math.Abs(a[i]-b[i]) > eps {
+			return false
+		}
+	}
+	return true
+}
+
+func TestCube(t *testing.T) {
+	t.Run("integers", func(t *testing.T) {
+		inputArr := [][]int{
+			{1, 2, 3, 4, 5},
+			{-2, 0, 3, -4},
+			{0},
+			{},
+		}
+
+		outputArr := [][]int{
+			{1, 8, 27, 64, 125},
+			{-8, 0, 27, -64},
+			{0},
+			{},
+		}
+
+		for idx, val := range inputArr {
+			req := []int{}
+			for cube := range hof.Cube(val) {
+				req = append(req, cube)
+			}
+
+			if !reflect.DeepEqual(req, outputArr[idx]) {
+				t.Errorf("got:%v\nwant:%v", req, outputArr[idx])
+			}
+		}
+	})
+	t.Run("floats", func(t *testing.T) {
+		inputArr := [][]float64{
+			{1.0, 2.0, 3.0},
+			{-2.0, 0.5, 1.5},
+			{0.0},
+			{},
+		}
+
+		outputArr := [][]float64{
+			{1.0, 8.0, 27.0},
+			{-8.0, 0.125, 3.375},
+			{0.0},
+			{},
+		}
+
+		for idx, val := range inputArr {
+			var req []float64
+			for cube := range hof.Cube(val) {
+				req = append(req, cube)
+			}
+
+			if !slicesAlmostEqual(req, outputArr[idx], 1e-9) {
+				t.Errorf("case %d:\ngot:  %v\nwant: %v", idx, req, outputArr[idx])
+			}
+		}
+	})
+}
+
+func TestSum(t *testing.T) {
+	t.Run("integers", func(t *testing.T) {
+		testCases := []struct {
+			input []int
+			want  int
+		}{
+			{[]int{1, 2, 3, 4, 5}, 15},
+			{[]int{-1, -2, -3}, -6},
+			{[]int{0, 0, 0}, 0},
+			{[]int{100}, 100},
+			{[]int{}, 0},
+			{[]int{-5, 5, -10, 10}, 0},
+		}
+
+		for _, tc := range testCases {
+			got := hof.Sum(tc.input)
+			if got != tc.want {
+				t.Errorf("Sum(%v) = %v, want %v", tc.input, got, tc.want)
+			}
+		}
+	})
+
+	t.Run("floats", func(t *testing.T) {
+		testCases := []struct {
+			input []float64
+			want  float64
+		}{
+			{[]float64{1.5, 2.5, 3.0}, 7.0},
+			{[]float64{-1.1, -2.2, -3.3}, -6.6},
+			{[]float64{0.0, 0.0}, 0.0},
+			{[]float64{3.14}, 3.14},
+			{[]float64{}, 0.0},
+		}
+
+		for _, tc := range testCases {
+			got := hof.Sum(tc.input)
+			if !floatAlmostEqual(got, tc.want, 1e-9) {
+				t.Errorf("Sum(%v) = %v, want %v", tc.input, got, tc.want)
+			}
+		}
+	})
+}
+
+func TestAverage(t *testing.T) {
+	t.Run("integers", func(t *testing.T) {
+		testCases := []struct {
+			input []int
+			want  float64
+		}{
+			{[]int{1, 2, 3, 4, 5}, 3.0},
+			{[]int{-2, -4, -6}, -4.0},
+			{[]int{0, 0, 0}, 0.0},
+			{[]int{100}, 100.0},
+			{[]int{10, 20}, 15.0},
+			{[]int{1, 3, 5, 7, 9}, 5.0},
+		}
+
+		for _, tc := range testCases {
+			got := hof.Average(tc.input)
+			if !floatAlmostEqual(got, tc.want, 1e-9) {
+				t.Errorf("Average(%v) = %v, want %v", tc.input, got, tc.want)
+			}
+		}
+	})
+
+	t.Run("floats", func(t *testing.T) {
+		testCases := []struct {
+			input []float64
+			want  float64
+		}{
+			{[]float64{1.0, 2.0, 3.0}, 2.0},
+			{[]float64{-1.5, -2.5}, -2.0},
+			{[]float64{5.5}, 5.5},
+			{[]float64{0.1, 0.2, 0.3}, 0.2},
+			{[]float64{10.5, 20.5, 30.0}, 20.333333333333332},
+		}
+
+		for _, tc := range testCases {
+			got := hof.Average(tc.input)
+			if !floatAlmostEqual(got, tc.want, 1e-9) {
+				t.Errorf("Average(%v) = %v, want %v", tc.input, got, tc.want)
+			}
+		}
+	})
+}
+
+func TestMin(t *testing.T) {
+	t.Run("integers", func(t *testing.T) {
+		testCases := []struct {
+			input []int
+			want  int
+		}{
+			{[]int{1, 2, 3, 4, 5}, 1},
+			{[]int{5, 4, 3, 2, 1}, 1},
+			{[]int{-1, -2, -3}, -3},
+			{[]int{0, -5, 10}, -5},
+			{[]int{100}, 100},
+			{[]int{7, 7, 7}, 7},
+			{[]int{}, 0}, // empty slice returns zero value
+		}
+
+		for _, tc := range testCases {
+			got := hof.Min(tc.input)
+			if got != tc.want {
+				t.Errorf("Min(%v) = %v, want %v", tc.input, got, tc.want)
+			}
+		}
+	})
+
+	t.Run("floats", func(t *testing.T) {
+		testCases := []struct {
+			input []float64
+			want  float64
+		}{
+			{[]float64{1.5, 2.5, 0.5}, 0.5},
+			{[]float64{-1.1, -2.2, -0.5}, -2.2},
+			{[]float64{3.14}, 3.14},
+			{[]float64{5.0, 5.0, 5.0}, 5.0},
+			{[]float64{}, 0.0}, // empty slice returns zero value
+		}
+
+		for _, tc := range testCases {
+			got := hof.Min(tc.input)
+			if !floatAlmostEqual(got, tc.want, 1e-9) {
+				t.Errorf("Min(%v) = %v, want %v", tc.input, got, tc.want)
+			}
+		}
+	})
+}
+
+func TestMax(t *testing.T) {
+	t.Run("integers", func(t *testing.T) {
+		testCases := []struct {
+			input []int
+			want  int
+		}{
+			{[]int{1, 2, 3, 4, 5}, 5},
+			{[]int{5, 4, 3, 2, 1}, 5},
+			{[]int{-1, -2, -3}, -1},
+			{[]int{0, -5, 10}, 10},
+			{[]int{100}, 100},
+			{[]int{7, 7, 7}, 7},
+		}
+
+		for _, tc := range testCases {
+			got := hof.Max(tc.input)
+			if got != tc.want {
+				t.Errorf("Max(%v) = %v, want %v", tc.input, got, tc.want)
+			}
+		}
+	})
+
+	t.Run("floats", func(t *testing.T) {
+		testCases := []struct {
+			input []float64
+			want  float64
+		}{
+			{[]float64{1.5, 2.5, 0.5}, 2.5},
+			{[]float64{-1.1, -2.2, -0.5}, -0.5},
+			{[]float64{3.14}, 3.14},
+			{[]float64{5.0, 5.0, 5.0}, 5.0},
+		}
+
+		for _, tc := range testCases {
+			got := hof.Max(tc.input)
+			if !floatAlmostEqual(got, tc.want, 1e-9) {
+				t.Errorf("Max(%v) = %v, want %v", tc.input, got, tc.want)
+			}
+		}
+	})
 }
